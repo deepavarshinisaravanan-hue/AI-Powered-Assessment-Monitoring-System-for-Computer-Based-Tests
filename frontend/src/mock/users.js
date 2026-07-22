@@ -1,0 +1,26 @@
+export const mockUsers = [
+  {
+    id: "stu-001",
+    name: "Aarav Sharma",
+    email: "student@proctorx.com",
+    password: "student123",
+    role: "student",
+    department: "Computer Science",
+    year: "3rd Year",
+    phone: "+91 98765 43210",
+    rollNo: "CS21B045",
+    avatar: null,
+  },
+  {
+    id: "adm-001",
+    name: "Dr. Meera Iyer",
+    email: "admin@proctorx.com",
+    password: "admin123",
+    role: "admin",
+    department: "Examination Cell",
+    year: "-",
+    phone: "+91 90123 45678",
+    rollNo: "-",
+    avatar: null,
+  },
+]

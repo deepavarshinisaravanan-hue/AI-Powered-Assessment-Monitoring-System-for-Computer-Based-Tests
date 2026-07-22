@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <rect width="100" height="100" rx="28" fill="url(#bg-grad)"/>
+  
+  {/* Security Shield */}
+  <path d="M50 15 L18 28 V52 C18 72 34 89 50 95 C66 89 82 72 82 52 V28 L50 15 Z" 
+        fill="url(#shield-inner)" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round"/>
+
+  {/* AI Lens Eye */}
+  <circle cx="50" cy="52" r="14" fill="#FFFFFF"/>
+  <circle cx="50" cy="52" r="6" fill="#2563EB"/>
+  <circle cx="50" cy="52" r="20" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="2" stroke-dasharray="4 4"/>
+  
+  {/* Active Status Badge */}
+  <circle cx="80" cy="20" r="8" fill="#22C55E" stroke="#FFFFFF" stroke-width="3"/>
+
+  <defs>
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/>
+      <stop offset="0.5" stop-color="#1D4ED8"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="shield-inner" x1="18" y1="15" x2="82" y2="95" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#60A5FA" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#1E40AF" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+</svg>

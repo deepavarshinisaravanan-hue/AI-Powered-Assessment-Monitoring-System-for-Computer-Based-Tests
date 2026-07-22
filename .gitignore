@@ -5,6 +5,8 @@ backend/venv/
 **/*.py[cod]
 .env
 .env.*
+!.env.example
+!.env.template
 .pytest_cache/
 .idea/
 .vscode/
