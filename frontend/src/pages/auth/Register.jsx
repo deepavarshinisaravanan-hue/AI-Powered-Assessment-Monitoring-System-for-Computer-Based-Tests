@@ -36,7 +36,7 @@ export default function Register() {
     if (!validate()) return
     setLoading(true)
     try {
-      const user = await login({ email: "student@proctorx.com", password: "student123", role: "student" })
+      const user = await login({ email: "student@example.com", password: "student123", role: "student" })
       toast.success(`Account created! Welcome, ${form.name || user.name}.`)
       navigate("/student/dashboard", { replace: true })
     } catch (err) {

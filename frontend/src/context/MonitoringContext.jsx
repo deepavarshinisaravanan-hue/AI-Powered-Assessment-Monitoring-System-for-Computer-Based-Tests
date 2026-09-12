@@ -6,9 +6,6 @@ import { storage, uid } from "../utils"
 const MonitoringContext = createContext(null)
 
 const initialStatus = {
-  face: true,
-  phone: false,
-  multiplePersons: false,
   browser: true,
   fullscreen: true,
 }

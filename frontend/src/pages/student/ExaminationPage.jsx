@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { useExam } from "../../context/ExamContext"
@@ -6,7 +6,6 @@ import { useMonitoring } from "../../context/MonitoringContext"
 import { useFullscreen } from "../../hooks/useFullscreen"
 import { useAntiCheat } from "../../hooks/useAntiCheat"
 import { useTimer } from "../../hooks/useTimer"
-import WebcamFeed from "../../components/monitoring/WebcamFeed"
 import MonitoringStatus from "../../components/monitoring/MonitoringStatus"
 import ViolationAlert from "../../components/monitoring/ViolationAlert"
 import ViolationList from "../../components/monitoring/ViolationList"
@@ -16,6 +15,7 @@ import Badge from "../../components/ui/Badge"
 import Progress from "../../components/ui/Progress"
 import Modal from "../../components/ui/Modal"
 import { formatTime } from "../../utils"
+import { violationService } from "../../services/violationService"
 import {
   FiClock,
   FiMaximize,
@@ -52,25 +52,46 @@ export default function ExaminationPage() {
   const [activeViolation, setActiveViolation] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [screenShareReady, setScreenShareReady] = useState(false)
+  const screenStreamRef = useRef(null)
+
+  // Violation metadata for mapping type to severity and description
+  const violationMeta = {
+    fullscreen: { severity: "medium", description: "Candidate exited required fullscreen mode" },
+    tab: { severity: "medium", description: "Browser tab change / focus lost detected" },
+    rightclick: { severity: "low", description: "Right-click context menu prohibited" },
+    copy: { severity: "low", description: "Copying text content is disabled" },
+    paste: { severity: "low", description: "Pasting text content is disabled" },
+    screen_share_denied: { severity: "high", description: "Screen sharing permission was denied" },
+    screen_share_stopped: { severity: "high", description: "Screen sharing stopped during the exam" },
+  }
+
+  // Send violation to backend and update local state
+  const reportViolationToBackend = useCallback(
+    (typeKey) => {
+      const meta = violationMeta[typeKey] || { severity: "medium", description: "Security violation recorded" }
+      violationService.reportViolation(exam?.id ?? 1, typeKey, meta.severity, meta.description)
+    },
+    [exam?.id]
+  )
 
   // Fullscreen hook
   const handleFullscreenExit = useCallback(() => {
     logViolation("fullscreen")
+    reportViolationToBackend("fullscreen")
     updateStatus({ fullscreen: false })
-  }, [logViolation, updateStatus])
+  }, [logViolation, reportViolationToBackend, updateStatus])
 
   const { isFullscreen, enter: enterFullscreen } = useFullscreen(handleFullscreenExit)
 
   // Anti-cheat hook
   useAntiCheat(true, (typeKey) => {
     logViolation(typeKey)
+    reportViolationToBackend(typeKey)
     if (typeKey === "tab") updateStatus({ browser: false })
     const meta = {
-      phone: { label: "Mobile phone detected near candidate", severity: "high" },
-      multiface: { label: "Multiple persons detected in camera frame", severity: "high" },
       fullscreen: { label: "Candidate exited required fullscreen mode", severity: "medium" },
       tab: { label: "Browser tab change / focus lost detected", severity: "medium" },
-      noface: { label: "Candidate face not detected in webcam feed", severity: "medium" },
       rightclick: { label: "Right-click context menu prohibited", severity: "low" },
       copy: { label: "Copying text content is disabled", severity: "low" },
       paste: { label: "Pasting text content is disabled", severity: "low" },
@@ -89,30 +110,92 @@ export default function ExaminationPage() {
 
   const { seconds: timeLeft } = useTimer(1800, handleTimerExpire)
 
-  // Auto load exam data & request fullscreen on mount
-  useEffect(() => {
-    loadExam()
-    enterFullscreen()
-  }, [loadExam, enterFullscreen])
+  // Screen sharing handlers - must be declared before useEffect
+    const handleScreenShareStop = useCallback(() => {
+    if (!screenShareReady) return
+
+    logViolation("screen_share_stopped")
+    reportViolationToBackend("screen_share_stopped")
+    setScreenShareReady(false)
+    setActiveViolation({
+      label: "Screen sharing stopped during the exam",
+      severity: "high",
+      time: new Date().toISOString(),
+    })
+    toast.error("Screen sharing stopped. This is a violation.")
+  }, [logViolation, reportViolationToBackend, screenShareReady])
+
+    const requestScreenShare = useCallback(async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      toast.error("This browser does not support screen sharing.")
+      setScreenShareReady(false)
+      return
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 30 },
+        audio: false,
+      })
+
+      screenStreamRef.current = stream
+      const track = stream.getVideoTracks()[0]
+      if (track) {
+        track.addEventListener("ended", handleScreenShareStop)
+      }
+      setScreenShareReady(true)
+    } catch (error) {
+      logViolation("screen_share_denied")
+      reportViolationToBackend("screen_share_denied")
+      setScreenShareReady(false)
+      setActiveViolation({
+        label: "Screen sharing is required to continue the exam",
+        severity: "high",
+        time: new Date().toISOString(),
+      })
+      toast.error("Screen sharing is required to continue the exam.")
+    }
+  }, [handleScreenShareStop, logViolation, reportViolationToBackend])
+
+ useEffect(() => {
+  loadExam()
+  enterFullscreen()
+
+  const existingStream = window.__examScreenStream
+
+  if (existingStream) {
+    screenStreamRef.current = existingStream
+    setScreenShareReady(true)
+
+    const track = existingStream.getVideoTracks()[0]
+
+    if (track) {
+      track.addEventListener("ended", handleScreenShareStop)
+    }
+  } else {
+    toast.error("Screen sharing is required to start the exam.")
+    setScreenShareReady(false)
+  }
+
+  return () => {
+    if (screenStreamRef.current) {
+      const track = screenStreamRef.current.getVideoTracks()[0]
+
+      if (track) {
+        track.removeEventListener("ended", handleScreenShareStop)
+      }
+    }
+  }
+}, [loadExam, enterFullscreen, handleScreenShareStop])
 
   // Periodic AI Proctored simulation trigger
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const rand = Math.random()
-      if (rand < 0.05) {
-        logViolation("noface")
-        updateStatus({ face: false })
-        setTimeout(() => updateStatus({ face: true }), 3000)
-      } else if (rand < 0.08 && rand >= 0.05) {
-        logViolation("phone")
-        updateStatus({ phone: true })
-        setTimeout(() => updateStatus({ phone: false }), 4000)
-      }
-    }, 12000)
-    return () => clearInterval(interval)
-  }, [logViolation, updateStatus])
+ 
+const handleFinalSubmit = async () => {
+    if (!screenShareReady) {
+      toast.error("Screen sharing is required to continue the exam.")
+      return
+    }
 
-  const handleFinalSubmit = async () => {
     setSubmitting(true)
     setShowConfirm(false)
     const timeSpentSec = 1800 - timeLeft
@@ -131,6 +214,12 @@ export default function ExaminationPage() {
 
   return (
     <div className="space-y-4">
+      {!screenShareReady && (
+        <div className="p-3 rounded-xl border border-warning/50 bg-warning/10 text-warning text-sm font-medium">
+          Screen sharing is required for this exam. Please allow access to your screen to continue.
+        </div>
+      )}
+
       {/* Real-time Violation Toast Banner */}
       <ViolationAlert
         violation={activeViolation}
@@ -286,9 +375,6 @@ export default function ExaminationPage() {
 
         {/* Right Side Monitoring & Question Palette Panel */}
         <div className="space-y-6">
-          {/* Live Proctor Webcam Stream */}
-          <WebcamFeed isMonitoring={true} />
-
           {/* Question Navigation Palette */}
           <Card className="p-5">
             <h4 className="text-sm font-bold text-foreground mb-3 flex items-center justify-between">

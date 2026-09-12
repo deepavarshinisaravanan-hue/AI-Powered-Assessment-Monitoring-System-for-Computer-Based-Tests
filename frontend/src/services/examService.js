@@ -1,25 +1,35 @@
 import api from "./api"
-import { mockExam, mockQuestions } from "../mock/questions"
-import { delay } from "../utils"
+import { STORAGE_KEYS } from "../constants"
+import { storage } from "../utils"
 
-const USE_MOCK = true
+const USE_MOCK = false
 
 export const examService = {
   async getExam() {
-    if (USE_MOCK) {
-      await delay(500)
-      return { exam: mockExam, questions: mockQuestions }
-    }
     const { data } = await api.get("/exam/current")
-    return data
+    const exam = data.exam
+    const questions = data.questions.map((q) => ({
+      id: q.id,
+      text: q.question_text,
+      options: [q.option_a, q.option_b, q.option_c, q.option_d],
+      answer: ["A", "B", "C", "D"].indexOf(q.correct_option),
+      difficulty: q.difficulty,
+    }))
+    return { exam, questions }
   },
 
   async submitExam(payload) {
-    if (USE_MOCK) {
-      await delay(900)
-      return { success: true, resultId: "res-" + Date.now() }
-    }
-    const { data } = await api.post("/exam/submit", payload)
+    const auth = storage(STORAGE_KEYS.AUTH).get()
+    const answers = Object.entries(payload.answers || {}).map(([question_id, selectedIndex]) => ({
+      question_id: Number(question_id),
+      selected_option: String.fromCharCode(65 + Number(selectedIndex)),
+    }))
+
+    const { data } = await api.post("/exam/submit", {
+      exam_id: payload.exam_id ?? 1,
+      student_id: auth?.user?.id ?? payload.student_id,
+      answers,
+    })
     return data
   },
 }

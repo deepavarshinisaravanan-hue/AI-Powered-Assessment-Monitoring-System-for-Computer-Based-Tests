@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet" href="css/admin.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+</head>
+
+<body>
+
+    <header>
+
+        <h2>
+            <i class="fa-solid fa-user-shield"></i>
+            Admin Dashboard
+        </h2>
+
+        <button id="refreshBtn">
+            <i class="fa-solid fa-rotate"></i>
+            Refresh
+        </button>
+
+    </header>
+
+    <div class="cards">
+
+        <div class="card blue">
+            <h3>Total Students</h3>
+            <h1>120</h1>
+        </div>
+
+        <div class="card green">
+            <h3>Online</h3>
+            <h1>98</h1>
+        </div>
+
+        <div class="card orange">
+            <h3>Warnings</h3>
+            <h1>15</h1>
+        </div>
+
+        <div class="card red">
+            <h3>Blocked</h3>
+            <h1>2</h1>
+        </div>
+
+    </div>
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Student</th>
+
+                    <th>Camera</th>
+
+                    <th>Fullscreen</th>
+
+                    <th>Browser</th>
+
+                    <th>Warnings</th>
+
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="studentTable">
+
+                <tr>
+
+                    <td>Deepavarshini</td>
+
+                    <td><span class="green-dot"></span> Active</td>
+
+                    <td>ON</td>
+
+                    <td>Active</td>
+
+                    <td>0</td>
+
+                    <td class="success">Normal</td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Rahul</td>
+
+                    <td><span class="red-dot"></span> No Face</td>
+
+                    <td>OFF</td>
+
+                    <td>Tab Changed</td>
+
+                    <td>2</td>
+
+                    <td class="danger">Warning</td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Priya</td>
+
+                    <td><span class="green-dot"></span> Active</td>
+
+                    <td>ON</td>
+
+                    <td>Active</td>
+
+                    <td>1</td>
+
+                    <td class="warning">Suspicious</td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <script src="js/admin.js"></script>
+
+</body>
+
+</html>

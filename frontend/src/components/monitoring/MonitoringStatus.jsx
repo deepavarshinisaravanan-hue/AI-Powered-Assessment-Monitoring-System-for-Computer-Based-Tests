@@ -5,33 +5,7 @@ export default function MonitoringStatus({ status }) {
   const { face, phone, multiplePersons, browser, fullscreen } = status
 
   const items = [
-    {
-      id: "face",
-      label: "Face Detection",
-      active: face,
-      warningText: "No Face Detected",
-      successText: "Face Verified",
-      icon: FiUser,
-      isDanger: !face,
-    },
-    {
-      id: "phone",
-      label: "Phone Detection",
-      active: !phone,
-      warningText: "Phone Detected!",
-      successText: "No Phone Detected",
-      icon: FiSmartphone,
-      isDanger: phone,
-    },
-    {
-      id: "multiplePersons",
-      label: "Multiple Persons",
-      active: !multiplePersons,
-      warningText: "Multiple Faces Flagged!",
-      successText: "Single Candidate",
-      icon: FiUsers,
-      isDanger: multiplePersons,
-    },
+    
     {
       id: "browser",
       label: "Browser Status",

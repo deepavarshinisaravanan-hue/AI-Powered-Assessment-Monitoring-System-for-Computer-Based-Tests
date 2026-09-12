@@ -65,12 +65,18 @@ export function ExamProvider({ children }) {
   const submitExam = useCallback(
     async (violationCount = 0, timeTakenSec = 0) => {
       const res = computeResult(violationCount, timeTakenSec)
-      await examService.submitExam({ answers, result: res })
+      const auth = storage(STORAGE_KEYS.AUTH).get()
+      await examService.submitExam({
+        exam_id: exam?.id ?? 1,
+        student_id: auth?.user?.id,
+        answers,
+        result: res,
+      })
       setResult(res)
       storage(STORAGE_KEYS.EXAM_STATE).set({ result: res })
       return res
     },
-    [answers, computeResult]
+    [answers, computeResult, exam]
   )
 
   const resetExam = useCallback(() => {

@@ -1,0 +1,189 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Poppins, sans-serif;
+}
+
+body {
+    background: #eef4fb;
+}
+
+header {
+
+    background: #2563eb;
+    color: white;
+
+    padding: 20px 40px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+}
+
+header button {
+
+    padding: 10px 20px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    background: white;
+
+    color: #2563eb;
+
+    font-weight: bold;
+
+}
+
+.cards {
+
+    display: grid;
+
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+    gap: 20px;
+
+    padding: 30px;
+
+}
+
+.card {
+
+    padding: 25px;
+
+    border-radius: 15px;
+
+    color: white;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .15);
+
+}
+
+.blue {
+
+    background: #2563eb;
+
+}
+
+.green {
+
+    background: #16a34a;
+
+}
+
+.orange {
+
+    background: #f59e0b;
+
+}
+
+.red {
+
+    background: #dc2626;
+
+}
+
+.table-container {
+
+    padding: 30px;
+
+}
+
+table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    background: white;
+
+    border-radius: 15px;
+
+    overflow: hidden;
+
+}
+
+th {
+
+    background: #2563eb;
+
+    color: white;
+
+    padding: 15px;
+
+}
+
+td {
+
+    padding: 15px;
+
+    text-align: center;
+
+    border-bottom: 1px solid #ddd;
+
+}
+
+.green-dot {
+
+    width: 10px;
+
+    height: 10px;
+
+    background: green;
+
+    display: inline-block;
+
+    border-radius: 50%;
+
+}
+
+.red-dot {
+
+    width: 10px;
+
+    height: 10px;
+
+    background: red;
+
+    display: inline-block;
+
+    border-radius: 50%;
+
+}
+
+.success {
+
+    color: green;
+
+    font-weight: bold;
+
+}
+
+.warning {
+
+    color: orange;
+
+    font-weight: bold;
+
+}
+
+.danger {
+
+    color: red;
+
+    font-weight: bold;
+
+}
+
+tr:hover {
+
+    background: #f5f5f5;
+
+}

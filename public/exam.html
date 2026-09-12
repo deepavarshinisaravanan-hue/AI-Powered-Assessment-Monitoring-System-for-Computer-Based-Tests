@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Assessment</title>
+
+    <link rel="stylesheet" href="css/exam.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h2>Assessment Monitoring System</h2>
+        </div>
+
+        <div class="top-right">
+
+            <div class="timer">
+                <i class="fa-solid fa-clock"></i>
+                <span id="time">02:00:00</span>
+            </div>
+
+            <button id="logoutBtn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </button>
+
+        </div>
+
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Question Section -->
+        <div class="question-section">
+
+            <div class="question-card">
+
+                <div class="question-header">
+
+                    <h3 id="questionNumber">Question 1 of 10</h3>
+
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+
+                </div>
+
+                <h2 id="question">
+                    What does HTML stand for?
+                </h2>
+
+                <form id="questionForm">
+
+                    <label class="option">
+                        <input type="radio" name="answer">
+                        Hyper Text Markup Language
+                    </label>
+
+                    <label class="option">
+                        <input type="radio" name="answer">
+                        High Transfer Machine Language
+                    </label>
+
+                    <label class="option">
+                        <input type="radio" name="answer">
+                        Hyper Tool Machine Language
+                    </label>
+
+                    <label class="option">
+                        <input type="radio" name="answer">
+                        Home Text Machine Language
+                    </label>
+
+                </form>
+
+                <div class="buttons">
+
+                    <button id="prevBtn">
+                        Previous
+                    </button>
+
+                    <button id="nextBtn">
+                        Next
+                    </button>
+
+                    <button id="submitBtn">
+                        Submit Exam
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Monitoring Panel -->
+        <div class="monitor-panel">
+
+            <div class="camera-card">
+
+                <h3>
+                    <i class="fa-solid fa-camera"></i>
+                    Live Camera
+                </h3>
+
+                <video id="video" autoplay playsinline></video>
+
+            </div>
+
+            <div class="status-card">
+
+                <h3>Monitoring Status</h3>
+
+                <div class="status-item">
+
+                    <span>
+                        <i class="fa-solid fa-user-check"></i>
+                        Face Detection
+                    </span>
+
+                    <span class="success" id="faceStatus">
+                        Active
+                    </span>
+
+                </div>
+
+                <div class="status-item">
+
+                    <span>
+                        <i class="fa-solid fa-window-maximize"></i>
+                        Fullscreen
+                    </span>
+
+                    <span class="success" id="fullscreenStatus">
+                        ON
+                    </span>
+
+                </div>
+
+                <div class="status-item">
+
+                    <span>
+                        <i class="fa-solid fa-globe"></i>
+                        Browser
+                    </span>
+
+                    <span class="success" id="browserStatus">
+                        Active
+                    </span>
+
+                </div>
+
+                <div class="status-item">
+
+                    <span>
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Warnings
+                    </span>
+
+                    <span class="warning" id="warningCount">
+                        0 / 3
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="student-card">
+
+                <h3>Student Details</h3>
+
+                <p><strong>Name:</strong> Deepavarshini</p>
+                <p><strong>Register No:</strong> 23IT001</p>
+                <p><strong>Department:</strong> Information Technology</p>
+                <p><strong>Exam:</strong> Web Technology</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="js/exam.js"></script>
+
+</body>
+
+</html>

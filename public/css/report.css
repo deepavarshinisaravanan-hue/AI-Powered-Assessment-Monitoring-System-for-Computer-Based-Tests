@@ -1,0 +1,178 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Poppins, sans-serif;
+}
+
+body {
+    background: #eef4fb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.report-card {
+
+    background: white;
+
+    width: 700px;
+
+    padding: 40px;
+
+    border-radius: 20px;
+
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .15);
+
+    text-align: center;
+
+}
+
+.success-icon {
+
+    font-size: 70px;
+
+    color: #22c55e;
+
+    margin-bottom: 20px;
+
+}
+
+.report-card h1 {
+
+    color: #2563eb;
+
+    margin-bottom: 10px;
+
+}
+
+.report-card p {
+
+    color: #666;
+
+    margin-bottom: 30px;
+
+}
+
+.details {
+
+    margin-top: 20px;
+
+}
+
+.row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 15px;
+
+    border-bottom: 1px solid #ddd;
+
+}
+
+.row span:first-child {
+
+    font-weight: 600;
+
+}
+
+.final {
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+}
+
+.pass {
+
+    color: #16a34a;
+
+}
+
+.buttons {
+
+    margin-top: 35px;
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 20px;
+
+    flex-wrap: wrap;
+
+}
+
+button {
+
+    padding: 14px 28px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-size: 16px;
+
+    transition: .3s;
+
+}
+
+button:hover {
+
+    transform: translateY(-3px);
+
+}
+
+.home {
+
+    background: #16a34a;
+
+}
+
+@media(max-width:768px) {
+
+    .report-card {
+
+        width: 95%;
+
+        padding: 20px;
+
+    }
+
+    .row {
+
+        flex-direction: column;
+
+        gap: 8px;
+
+    }
+
+    .buttons {
+
+        flex-direction: column;
+
+    }
+
+    button {
+
+        width: 100%;
+
+    }
+
+}

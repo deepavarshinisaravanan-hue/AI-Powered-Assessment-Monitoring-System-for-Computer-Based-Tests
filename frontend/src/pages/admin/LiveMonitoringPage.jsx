@@ -7,35 +7,55 @@ import Loader from "../../components/ui/Loader"
 import Badge from "../../components/ui/Badge"
 import Button from "../../components/ui/Button"
 import { monitoringService } from "../../services/monitoringService"
+import { violationService } from "../../services/violationService"
 import { departments } from "../../mock/students"
 import { FiRefreshCw, FiVideo } from "react-icons/fi"
 import toast from "react-hot-toast"
 
 export default function LiveMonitoringPage() {
   const [students, setStudents] = useState([])
+  const [violations, setViolations] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [filters, setFilters] = useState({ department: "", status: "" })
   const [selectedStudent, setSelectedStudent] = useState(null)
 
-  const fetchLive = async () => {
+  // Fetch students and violations data
+  const fetchLiveData = async () => {
     try {
       const res = await monitoringService.getLiveStudents()
-      setStudents(res.students)
+      const studentsData = res.students
+      
+      // Fetch violations for current exam (using exam_id = 1 as default)
+      const violationsData = await violationService.getExamViolations(1)
+      setViolations(violationsData)
+      
+      // Enrich student data with violation counts
+      const enrichedStudents = studentsData.map((student) => {
+        const studentViolations = violationsData.filter((v) => v.student_id === student.id)
+        return {
+          ...student,
+          violations: studentViolations.length,
+          violationsList: studentViolations,
+        }
+      })
+      
+      setStudents(enrichedStudents)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchLive()
-    const interval = setInterval(fetchLive, 10000)
+    fetchLiveData()
+    // Poll for violations every 5 seconds
+    const interval = setInterval(fetchLiveData, 5000)
     return () => clearInterval(interval)
   }, [])
 
   const handleRefresh = () => {
     setLoading(true)
-    fetchLive()
+    fetchLiveData()
     toast.success("Telemetry feed refreshed.")
   }
 
@@ -50,7 +70,7 @@ export default function LiveMonitoringPage() {
     })
   }, [students, search, filters])
 
-  if (loading && !students.length) return <Loader label="Connecting to proctoring camera streams..." />
+  if (loading && !students.length) return <Loader label="Connecting to live monitoring..." />
 
   const filterConfigs = [
     {
@@ -79,11 +99,11 @@ export default function LiveMonitoringPage() {
     <div className="space-y-6">
       <PageHeader
         title="Live Proctoring Console"
-        description="Real-time multi-candidate camera feeds, AI anomaly alerts, and active session monitoring."
+        description="Real-time student screen monitoring, violation alerts, and active examination sessions."
         actions={
           <div className="flex items-center gap-3">
             <Badge variant="danger" dot className="px-3 py-1 text-xs animate-pulse">
-              <FiVideo className="inline mr-1" /> {students.length} Streams Active ({flaggedCount} Flagged)
+              <FiVideo className="inline mr-1" /> {students.length} Students Active ({flaggedCount} Flagged)
             </Badge>
             <Button variant="outline" icon={FiRefreshCw} onClick={handleRefresh}>
               Refresh Grid

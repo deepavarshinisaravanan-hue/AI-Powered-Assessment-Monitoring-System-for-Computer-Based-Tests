@@ -7,7 +7,7 @@ export const mockExam = {
   instructions: [
     "The exam contains 10 multiple-choice questions.",
     "Each question carries 2 marks. There is no negative marking.",
-    "Your webcam and microphone must remain enabled throughout the exam.",
+    "Your entire screen must remain shared throughout the exam.",
     "Do not exit fullscreen mode or switch browser tabs.",
     "The exam will auto-submit when the timer reaches zero.",
   ],

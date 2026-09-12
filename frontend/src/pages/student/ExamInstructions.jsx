@@ -7,10 +7,8 @@ import Checkbox from "../../components/forms/Checkbox"
 import Badge from "../../components/ui/Badge"
 import { mockExam } from "../../mock/questions"
 import {
-  FiCamera,
   FiMaximize,
   FiWifi,
-  FiMic,
   FiShield,
   FiCheckCircle,
   FiAlertTriangle,
@@ -25,11 +23,11 @@ export default function ExamInstructions() {
 
   const systemChecks = [
     {
-      id: "webcam",
-      label: "Webcam Requirement",
-      desc: "Live camera stream enabled for continuous face verification.",
-      icon: FiCamera,
-      status: "Ready",
+      id: "screen-share",
+      label: "Screen Sharing Requirement",
+      desc: "Your entire screen must be shared throughout the examination.",
+      icon: FiShield,
+      status: "Required",
     },
     {
       id: "fullscreen",
@@ -45,27 +43,54 @@ export default function ExamInstructions() {
       icon: FiWifi,
       status: "Ready",
     },
-    {
-      id: "microphone",
-      label: "Microphone Requirement",
-      desc: "Audio channel monitoring enabled for ambient noise checks.",
-      icon: FiMic,
-      status: "Ready",
-    },
   ]
 
-  const handleStartExam = () => {
-    if (!accepted) {
-      toast.error("Please review and accept the integrity notice to proceed.")
+  const handleStartExam = async () => {
+  if (!accepted) {
+    toast.error("Please review and accept the integrity notice to proceed.")
+    return
+  }
+
+  try {
+    setLoading(true)
+
+    if (!navigator.mediaDevices?.getDisplayMedia) {
+      toast.error("Screen sharing is not supported by this browser.")
+      setLoading(false)
       return
     }
-    setLoading(true)
-    toast.success("Initializing anti-cheat proctoring session...")
-    setTimeout(() => {
+
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: {
+        frameRate: 30,
+      },
+      audio: false,
+    })
+
+    const videoTrack = stream.getVideoTracks()[0]
+
+    if (!videoTrack) {
+      toast.error("Screen sharing could not be started.")
       setLoading(false)
-      navigate("/student/exam")
-    }, 800)
+      return
+    }
+
+    // Keep the real screen stream available when moving to the exam page
+    window.__examScreenStream = stream
+
+    videoTrack.addEventListener("ended", () => {
+      window.__examScreenStream = null
+    })
+
+    toast.success("Screen sharing enabled. Starting assessment...")
+
+    navigate("/student/exam")
+  } catch (error) {
+    console.error("Screen sharing failed:", error)
+    toast.error("Screen sharing is required to start the examination.")
+    setLoading(false)
   }
+}
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

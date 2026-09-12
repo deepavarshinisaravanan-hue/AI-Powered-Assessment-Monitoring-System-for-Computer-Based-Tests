@@ -11,8 +11,8 @@ import { useAuth } from "../../context/AuthContext"
 import toast from "react-hot-toast"
 
 const demoAccounts = [
-  { role: "student", label: "Student", email: "student@proctorx.com", password: "student123" },
-  { role: "admin", label: "Admin", email: "admin@proctorx.com", password: "admin123" },
+  { role: "student", label: "Student", email: "student@example.com", password: "student123" },
+  { role: "admin", label: "Admin", email: "admin@example.com", password: "admin123" },
 ]
 
 export default function Login() {
@@ -21,7 +21,7 @@ export default function Login() {
   const location = useLocation()
 
   const [role, setRole] = useState("student")
-  const [form, setForm] = useState({ email: "student@proctorx.com", password: "student123", remember: true })
+  const [form, setForm] = useState({ email: "student@example.com", password: "student123", remember: true })
   const [errors, setErrors] = useState({})
   const [showPw, setShowPw] = useState(false)
   const [submitError, setSubmitError] = useState("")
