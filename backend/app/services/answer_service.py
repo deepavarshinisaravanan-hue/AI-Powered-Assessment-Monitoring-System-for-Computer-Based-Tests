@@ -7,7 +7,10 @@ from app.schemas.answer import AnswerCreate
 
 
 def submit_answer(db: Session, payload: AnswerCreate):
-    question = db.query(Question).filter(Question.id == payload.question_id).first()
+    question = db.query(Question).filter(
+        Question.id == payload.question_id,
+        Question.exam_id == payload.exam_id,
+    ).first()
     if not question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Question not found")
 

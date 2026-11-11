@@ -8,6 +8,7 @@ from app.database import Base, SessionLocal, engine, check_db_connection
 # Import all models to ensure SQLAlchemy recognizes them for create_all()
 from app.models.user import User
 from app.models.exam import Exam
+from app.models.exam_assignment import ExamAssignment
 from app.models.question import Question
 from app.models.answer import Answer
 from app.models.monitoring import MonitoringSession
@@ -29,6 +30,8 @@ from app.services.seed_service import seed_demo_data
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    for index in MonitoringSession.__table__.indexes:
+        index.create(bind=engine, checkfirst=True)
     db = SessionLocal()
     try:
         seed_demo_data(db)

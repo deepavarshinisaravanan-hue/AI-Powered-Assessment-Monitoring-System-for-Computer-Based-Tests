@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models.exam import Exam
+from app.models.exam_assignment import ExamAssignment
 from app.models.question import Question
 from app.models.user import User
 from app.services.auth_service import hash_password
@@ -54,3 +55,14 @@ def seed_demo_data(db: Session) -> None:
         )
         db.add(question)
         db.commit()
+
+    demo_exam = db.query(Exam).filter(Exam.title == "Demo Assessment").first()
+    demo_student = db.query(User).filter(User.email == "student@example.com").first()
+    if demo_exam and demo_student:
+        assignment = db.query(ExamAssignment).filter(
+            ExamAssignment.exam_id == demo_exam.id,
+            ExamAssignment.student_id == demo_student.id,
+        ).first()
+        if not assignment:
+            db.add(ExamAssignment(exam_id=demo_exam.id, student_id=demo_student.id))
+            db.commit()

@@ -3,6 +3,7 @@ export function cn(...classes) {
 }
 
 export function formatTime(seconds) {
+  if (!Number.isFinite(seconds)) return "--:--"
   const s = Math.max(0, Math.floor(seconds))
   const h = Math.floor(s / 3600)
   const m = Math.floor((s % 3600) / 60)
@@ -73,21 +74,25 @@ export function storage(key) {
   return {
     get(fallback = null) {
       try {
-        const raw = localStorage.getItem(key)
+        const raw = localStorage.getItem(key) || sessionStorage.getItem(key)
         return raw ? JSON.parse(raw) : fallback
       } catch {
         return fallback
       }
     },
-    set(value) {
+    set(value, persistent = true) {
       try {
-        localStorage.setItem(key, JSON.stringify(value))
+        const target = persistent ? localStorage : sessionStorage
+        const other = persistent ? sessionStorage : localStorage
+        target.setItem(key, JSON.stringify(value))
+        other.removeItem(key)
       } catch {
         /* ignore */
       }
     },
     remove() {
       localStorage.removeItem(key)
+      sessionStorage.removeItem(key)
     },
   }
 }

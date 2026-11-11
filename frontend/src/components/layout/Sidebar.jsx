@@ -8,6 +8,7 @@ import {
   FiX,
   FiAward,
   FiLogOut,
+  FiPlusCircle,
 } from "react-icons/fi"
 import Logo from "./Logo"
 import { cn } from "../../utils"
@@ -15,6 +16,7 @@ import { useAuth } from "../../context/AuthContext"
 
 const adminNav = [
   { to: "/admin/dashboard", label: "Dashboard", icon: FiGrid },
+  { to: "/admin/assessments/create", label: "Create Assessment", icon: FiPlusCircle },
   { to: "/admin/monitoring", label: "Live Monitoring", icon: FiVideo },
   { to: "/admin/reports", label: "Reports", icon: FiFileText },
   { to: "/profile", label: "Profile", icon: FiUser },
@@ -29,7 +31,7 @@ const studentNav = [
 
 export default function Sidebar({ role = "admin", open, onClose }) {
   const { logout } = useAuth()
-  const nav = role === "admin" ? adminNav : studentNav
+  const nav = role === "admin" || role === "faculty" ? adminNav : studentNav
 
   return (
     <>

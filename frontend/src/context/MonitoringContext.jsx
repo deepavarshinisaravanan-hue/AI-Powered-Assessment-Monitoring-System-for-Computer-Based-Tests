@@ -57,6 +57,7 @@ export function MonitoringProvider({ children }) {
   const resetMonitoring = useCallback(() => {
     setStatus(initialStatus)
     setViolations([])
+    lastToast.current = {}
     storage(STORAGE_KEYS.VIOLATIONS).remove()
   }, [])
 

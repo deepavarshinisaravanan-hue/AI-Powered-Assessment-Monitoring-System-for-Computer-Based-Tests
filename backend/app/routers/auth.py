@@ -18,7 +18,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 @router.post("/login", response_model=TokenResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     user = authenticate_user(db, payload)
-    access_token = create_access_token(subject=str(user.id))
+    access_token = create_access_token(subject=str(user.id), role=user.role)
     return {
         "access_token": access_token,
         "token_type": "bearer",

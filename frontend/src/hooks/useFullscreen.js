@@ -7,6 +7,7 @@ export function useFullscreen(onExit) {
 
   const enter = useCallback(async () => {
     try {
+      if (document.fullscreenElement) return
       await document.documentElement.requestFullscreen?.()
     } catch {
       /* user denied or unsupported */

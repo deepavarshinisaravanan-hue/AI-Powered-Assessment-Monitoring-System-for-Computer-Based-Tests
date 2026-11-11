@@ -1,10 +1,10 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Modal from "../ui/Modal"
 import Badge from "../ui/Badge"
 import Avatar from "../ui/Avatar"
 import Button from "../ui/Button"
 import Card from "../ui/Card"
-import { FiAlertTriangle, FiCheckCircle, FiSlash, FiShield, FiClock } from "react-icons/fi"
+import { FiAlertTriangle, FiCheckCircle, FiSlash, FiShield, FiClock, FiVideo } from "react-icons/fi"
 import { formatTime } from "../../utils"
 import toast from "react-hot-toast"
 
@@ -20,8 +20,21 @@ const severityBgColors = {
   low: "bg-info/10",
 }
 
-export default function StudentDetailModal({ student, isOpen, onClose }) {
+export default function StudentDetailModal({ student, isOpen, onClose, remoteStream, remoteCameraStream, cameraUnavailable }) {
   const [actionLoading, setActionLoading] = useState(false)
+  const screenVideoRef = useRef(null)
+  const cameraVideoRef = useRef(null)
+
+  useEffect(() => {
+    if (screenVideoRef.current && remoteStream) {
+      screenVideoRef.current.srcObject = remoteStream
+      screenVideoRef.current.play().catch(() => {})
+    }
+    if (cameraVideoRef.current && remoteCameraStream) {
+      cameraVideoRef.current.srcObject = remoteCameraStream
+      cameraVideoRef.current.play().catch(() => {})
+    }
+  }, [remoteStream, remoteCameraStream])
 
   if (!student) return null
 
@@ -47,7 +60,7 @@ export default function StudentDetailModal({ student, isOpen, onClose }) {
 
   return (
     <Modal
-      isOpen={isOpen}
+      open={isOpen}
       onClose={onClose}
       title={`Live Inspection: ${student.name}`}
       size="xl"
@@ -57,15 +70,30 @@ export default function StudentDetailModal({ student, isOpen, onClose }) {
           {/* Left Column: Live Feed and Quick Status */}
           <div className="lg:col-span-2 space-y-4">
             <div className="relative aspect-video bg-dark rounded-2xl overflow-hidden border border-border/80 flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-t from-dark/90 via-transparent to-transparent z-10" />
-
-              <div className="text-center p-6 z-0">
-                <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
-                  <FiVideo className="w-8 h-8 animate-pulse" />
+              {remoteStream ? (
+                <video
+                  ref={screenVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  aria-label="Student Screen"
+                  className="absolute inset-0 h-full w-full object-contain"
+                />
+              ) : (
+                <div className="text-center p-6 z-0">
+                  <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
+                    <FiVideo className="w-8 h-8 animate-pulse" />
+                  </div>
+                  <p className="text-sm font-semibold text-white">Waiting for Student Screen</p>
+                  <p className="text-xs text-muted font-mono">{student.rollNo}</p>
                 </div>
-                <p className="text-sm font-semibold text-white">Live Screen Share</p>
-                <p className="text-xs text-muted font-mono">{student.rollNo} • 720p HD</p>
-              </div>
+              )}
+
+              {remoteStream && (
+                <span className="absolute bottom-3 left-3 z-20 rounded bg-dark/80 px-2 py-1 text-xs text-white">
+                  Student Screen
+                </span>
+              )}
 
               <div className="absolute top-3 left-3 z-20 flex gap-2">
                 <Badge variant={student.status === "Flagged" ? "danger" : "success"} dot>
@@ -77,6 +105,23 @@ export default function StudentDetailModal({ student, isOpen, onClose }) {
                 </span>
               </div>
             </div>
+
+            {remoteCameraStream && (
+              <div className="max-w-xs">
+                <h4 className="mb-2 text-xs font-semibold text-foreground">Student Camera</h4>
+                <video
+                  ref={cameraVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  aria-label="Student Camera"
+                  className="w-full rounded-xl bg-black object-contain"
+                />
+              </div>
+            )}
+            {!remoteCameraStream && cameraUnavailable && (
+              <p className="text-xs font-semibold text-danger">No Face</p>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <Card className="p-3 text-center">

@@ -2,9 +2,12 @@ import axios from "axios"
 import { STORAGE_KEYS } from "../constants"
 import { storage } from "../utils"
 
-// Base Axios instance — point this at the FastAPI backend once available.
+// Use the current origin by default so LAN clients reach the Vite /api proxy,
+// rather than trying to reach their own localhost.
+export const API_BASE_URL = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "")
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
+  baseURL: API_BASE_URL,
   timeout: 15000,
   headers: { "Content-Type": "application/json" },
 })
@@ -12,7 +15,7 @@ const api = axios.create({
 // Attach auth token from localStorage on every request.
 api.interceptors.request.use((config) => {
   const auth = storage(STORAGE_KEYS.AUTH).get()
-  if (auth?.token) {
+  if (auth?.token && !config.headers.Authorization) {
     config.headers.Authorization = `Bearer ${auth.token}`
   }
   return config

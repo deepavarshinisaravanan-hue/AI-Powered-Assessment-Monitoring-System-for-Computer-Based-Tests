@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
+from sqlalchemy import Column, Index, Integer, String, DateTime, ForeignKey, JSON, text
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -6,6 +6,16 @@ from app.database import Base
 
 class MonitoringSession(Base):
     __tablename__ = "monitoring_sessions"
+    __table_args__ = (
+        Index(
+            "uq_monitoring_active_student_exam",
+            "student_id",
+            "exam_id",
+            unique=True,
+            sqlite_where=text("status = 'active'"),
+            postgresql_where=text("status = 'active'"),
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("users.id"), nullable=False)

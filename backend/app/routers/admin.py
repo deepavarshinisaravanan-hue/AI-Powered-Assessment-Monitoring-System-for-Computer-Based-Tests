@@ -17,7 +17,7 @@ def admin_dashboard(
     current_user: dict = Depends(get_current_user),
 ):
     admin = get_user_by_id(db, current_user["user_id"])
-    if not admin or admin.role != "admin":
+    if not admin or admin.role not in {"admin", "faculty"}:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     total_users = db.query(User).count()

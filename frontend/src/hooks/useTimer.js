@@ -1,12 +1,20 @@
 import { useEffect, useRef, useState } from "react"
 
-export function useTimer(initialSeconds, onExpire) {
-  const [seconds, setSeconds] = useState(initialSeconds)
+export function useTimer(initialSeconds, onExpire, enabled = true) {
+  const safeInitialSeconds = Number.isFinite(initialSeconds)
+    ? Math.max(0, Math.floor(initialSeconds))
+    : 0
+  const [seconds, setSeconds] = useState(safeInitialSeconds)
   const [running, setRunning] = useState(true)
   const expiredRef = useRef(false)
 
   useEffect(() => {
-    if (!running) return
+    setSeconds(safeInitialSeconds)
+    expiredRef.current = false
+  }, [safeInitialSeconds])
+
+  useEffect(() => {
+    if (!running || !enabled || safeInitialSeconds <= 0) return
     const id = setInterval(() => {
       setSeconds((s) => {
         if (s <= 1) {
@@ -21,7 +29,7 @@ export function useTimer(initialSeconds, onExpire) {
       })
     }, 1000)
     return () => clearInterval(id)
-  }, [running, onExpire])
+  }, [running, enabled, onExpire, safeInitialSeconds])
 
   return { seconds, running, setRunning }
 }

@@ -1,15 +1,20 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
+import { useExam } from "../../context/ExamContext"
+import { useMonitoring } from "../../context/MonitoringContext"
 import PageHeader from "../../components/common/PageHeader"
 import Card from "../../components/ui/Card"
 import Button from "../../components/ui/Button"
 import Checkbox from "../../components/forms/Checkbox"
 import Badge from "../../components/ui/Badge"
 import { mockExam } from "../../mock/questions"
+import { getScreenShareUnavailableReason } from "../../utils/screenShare"
 import {
   FiMaximize,
   FiWifi,
   FiShield,
+  FiCamera,
   FiCheckCircle,
   FiAlertTriangle,
   FiPlay,
@@ -18,6 +23,10 @@ import toast from "react-hot-toast"
 
 export default function ExamInstructions() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const examId = searchParams.get("exam_id")
+  const { resetExam } = useExam()
+  const { resetMonitoring } = useMonitoring()
   const [accepted, setAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -27,6 +36,13 @@ export default function ExamInstructions() {
       label: "Screen Sharing Requirement",
       desc: "Your entire screen must be shared throughout the examination.",
       icon: FiShield,
+      status: "Required",
+    },
+    {
+      id: "camera-monitoring",
+      label: "Camera Monitoring Requirement",
+      desc: "Your camera must remain enabled throughout the examination.",
+      icon: FiCamera,
       status: "Required",
     },
     {
@@ -46,51 +62,68 @@ export default function ExamInstructions() {
   ]
 
   const handleStartExam = async () => {
-  if (!accepted) {
-    toast.error("Please review and accept the integrity notice to proceed.")
-    return
-  }
-
-  try {
-    setLoading(true)
-
-    if (!navigator.mediaDevices?.getDisplayMedia) {
-      toast.error("Screen sharing is not supported by this browser.")
-      setLoading(false)
+    if (!accepted) {
+      toast.error("Please review and accept the integrity notice to proceed.")
       return
     }
 
-    const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: {
-        frameRate: 30,
-      },
-      audio: false,
-    })
-
-    const videoTrack = stream.getVideoTracks()[0]
-
-    if (!videoTrack) {
-      toast.error("Screen sharing could not be started.")
-      setLoading(false)
+    const screenShareIssue = getScreenShareUnavailableReason()
+    if (screenShareIssue) {
+      toast.error(screenShareIssue)
       return
     }
 
-    // Keep the real screen stream available when moving to the exam page
-    window.__examScreenStream = stream
+    const alreadyFullscreen = Boolean(document.fullscreenElement)
+    if (!alreadyFullscreen && !document.documentElement.requestFullscreen) {
+      toast.error("Fullscreen mode is not supported by this browser.")
+      return
+    }
 
-    videoTrack.addEventListener("ended", () => {
-      window.__examScreenStream = null
-    })
+    try {
+      setLoading(true)
+      const fullscreenRequest = alreadyFullscreen
+        ? Promise.resolve()
+        : document.documentElement.requestFullscreen()
+      const screenShareRequest = navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 30 },
+        audio: false,
+      })
 
-    toast.success("Screen sharing enabled. Starting assessment...")
+      let stream
+      try {
+        ;[, stream] = await Promise.all([fullscreenRequest, screenShareRequest])
+      } catch (error) {
+        screenShareRequest
+          .then((pendingStream) => pendingStream.getTracks().forEach((track) => track.stop()))
+          .catch(() => {})
+        if (!alreadyFullscreen && document.fullscreenElement) {
+          await document.exitFullscreen?.()
+        }
+        throw error
+      }
 
-    navigate("/student/exam")
-  } catch (error) {
-    console.error("Screen sharing failed:", error)
-    toast.error("Screen sharing is required to start the examination.")
-    setLoading(false)
+      const videoTrack = stream.getVideoTracks()[0]
+      if (!videoTrack) {
+        stream.getTracks().forEach((track) => track.stop())
+        if (!alreadyFullscreen) await document.exitFullscreen?.()
+        throw new Error("Screen sharing did not provide a video track.")
+      }
+
+      window.__examScreenStream = stream
+      videoTrack.addEventListener("ended", () => {
+        if (window.__examScreenStream === stream) window.__examScreenStream = null
+      })
+
+      resetExam()
+      resetMonitoring()
+      toast.success("Screen sharing enabled. Starting assessment...")
+      navigate("/student/exam", { state: { examId } })
+    } catch (error) {
+      console.error("Exam readiness request failed:", error)
+      toast.error("Fullscreen and screen sharing are required to start the examination.")
+      setLoading(false)
+    }
   }
-}
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

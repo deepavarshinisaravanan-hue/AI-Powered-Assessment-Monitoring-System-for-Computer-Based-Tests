@@ -19,6 +19,7 @@ import AdminDashboard from "../pages/admin/AdminDashboard"
 import LiveMonitoringPage from "../pages/admin/LiveMonitoringPage"
 import ReportsPage from "../pages/admin/ReportsPage"
 import StudentDetailsPage from "../pages/admin/StudentDetailsPage"
+import CreateAssessmentPage from "../pages/admin/CreateAssessmentPage"
 
 import ProfilePage from "../pages/common/ProfilePage"
 import NotFoundPage from "../pages/common/NotFoundPage"
@@ -30,7 +31,7 @@ export default function AppRoutes() {
   // Root redirect logic based on authenticated role
   const getDefaultHome = () => {
     if (!isAuthenticated) return <Navigate to="/login" replace />
-    return user?.role === "admin" ? (
+    return ["admin", "faculty"].includes(user?.role) ? (
       <Navigate to="/admin/dashboard" replace />
     ) : (
       <Navigate to="/student/dashboard" replace />
@@ -76,12 +77,13 @@ export default function AppRoutes() {
       {/* Admin Protected Routes (Dashboard Layout) */}
       <Route
         element={
-          <RoleRoute allowedRoles={["admin"]}>
+          <RoleRoute allowedRoles={["admin", "faculty"]}>
             <DashboardLayout role="admin" title="Admin Monitoring Console" />
           </RoleRoute>
         }
       >
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/assessments/create" element={<CreateAssessmentPage />} />
         <Route path="/admin/monitoring" element={<LiveMonitoringPage />} />
         <Route path="/admin/reports" element={<ReportsPage />} />
         <Route path="/admin/student/:id" element={<StudentDetailsPage />} />

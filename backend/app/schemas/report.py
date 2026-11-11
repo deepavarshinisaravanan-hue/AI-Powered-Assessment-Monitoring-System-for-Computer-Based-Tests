@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -16,6 +18,7 @@ class ReportResponse(BaseModel):
     score: float
     percentage: float
     status: str
+    generated_at: datetime
 
     class Config:
         from_attributes = True

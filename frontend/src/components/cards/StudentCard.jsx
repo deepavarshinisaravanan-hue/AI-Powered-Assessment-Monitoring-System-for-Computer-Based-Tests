@@ -1,12 +1,26 @@
-import { FiAlertTriangle, FiEye, FiClock, FiVideoOff, FiSmartphone, FiUsers } from "react-icons/fi"
+import { useEffect, useRef } from "react"
+import { FiAlertTriangle, FiEye, FiClock, FiVideo, FiVideoOff, FiSmartphone, FiUsers } from "react-icons/fi"
 import Card from "../ui/Card"
 import Badge from "../ui/Badge"
 import Avatar from "../ui/Avatar"
 import Button from "../ui/Button"
 import { formatTime } from "../../utils"
 
-export default function StudentCard({ student, onViewDetails }) {
+export default function StudentCard({ student, screenStream, cameraStream, cameraUnavailable, onViewDetails }) {
   const { name, rollNo, department, timeLeft, violations, face, phone, multiplePersons, status } = student
+  const screenVideoRef = useRef(null)
+  const cameraVideoRef = useRef(null)
+
+  useEffect(() => {
+    if (screenVideoRef.current && screenStream) {
+      screenVideoRef.current.srcObject = screenStream
+      screenVideoRef.current.play().catch(() => {})
+    }
+    if (cameraVideoRef.current && cameraStream) {
+      cameraVideoRef.current.srcObject = cameraStream
+      cameraVideoRef.current.play().catch(() => {})
+    }
+  }, [screenStream, cameraStream])
 
   const isFlagged = status === "Flagged" || violations >= 5
 
@@ -31,25 +45,57 @@ export default function StudentCard({ student, onViewDetails }) {
         </Badge>
       </div>
 
-      {/* Simulated Live Camera Feed Thumbnail */}
       <div className="relative aspect-video bg-dark/90 rounded-xl overflow-hidden mb-3 border border-border/40 flex items-center justify-center group">
-        <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-transparent to-transparent z-10" />
-        
-        {/* Camera visual mockup */}
-        <div className="text-center text-muted/60 p-4 z-0">
-          <div className="w-10 h-10 mx-auto mb-1 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-            <span className="text-xs font-bold font-mono">LIVE</span>
+        {screenStream ? (
+          <>
+            <video
+              ref={screenVideoRef}
+              autoPlay
+              muted
+              playsInline
+              aria-label="Student Screen"
+              className="absolute inset-0 h-full w-full object-contain"
+            />
+            <span className="absolute bottom-2 left-2 z-20 rounded bg-dark/80 px-2 py-1 text-[10px] text-white">
+              Student Screen
+            </span>
+          </>
+        ) : (
+          <div className="text-center text-muted/60 p-4 z-0">
+            <div className="w-10 h-10 mx-auto mb-1 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+              <span className="text-xs font-bold font-mono">LIVE</span>
+            </div>
+            <span className="text-[11px]">Proctor Feed</span>
           </div>
-          <span className="text-[11px]">Proctor Feed</span>
-        </div>
+        )}
+
+        {cameraStream && (
+          <div className="absolute right-2 top-2 z-20 w-20 overflow-hidden rounded border border-white/50 bg-black">
+            <video
+              ref={cameraVideoRef}
+              autoPlay
+              muted
+              playsInline
+              aria-label="Student Camera"
+              className="aspect-video w-full object-cover"
+            />
+            <span className="block bg-dark/80 px-1 py-0.5 text-center text-[8px] text-white">
+              Student Camera
+            </span>
+          </div>
+        )}
 
         {/* Live Indicators Overlay */}
         <div className="absolute top-2 left-2 z-20 flex gap-1.5">
-          {!face && (
+          {cameraStream ? (
+            <span className="px-1.5 py-0.5 rounded bg-success text-white text-[10px] font-medium flex items-center gap-1">
+              <FiVideo className="w-3 h-3" /> Camera Live
+            </span>
+          ) : cameraUnavailable || face === false ? (
             <span className="px-1.5 py-0.5 rounded bg-danger text-white text-[10px] font-medium flex items-center gap-1">
               <FiVideoOff className="w-3 h-3" /> No Face
             </span>
-          )}
+          ) : null}
           {phone && (
             <span className="px-1.5 py-0.5 rounded bg-danger text-white text-[10px] font-medium flex items-center gap-1">
               <FiSmartphone className="w-3 h-3" /> Phone

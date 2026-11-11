@@ -2,7 +2,14 @@ import StudentCard from "../cards/StudentCard"
 import EmptyState from "../ui/EmptyState"
 import { FiUsers } from "react-icons/fi"
 
-export default function LiveStudentGrid({ students = [], onViewDetails }) {
+export default function LiveStudentGrid({
+  students = [],
+  onViewDetails,
+  selectedStudentId,
+  remoteScreenStream,
+  remoteCameraStream,
+  cameraUnavailable,
+}) {
   if (!students.length) {
     return (
       <EmptyState
@@ -17,7 +24,14 @@ export default function LiveStudentGrid({ students = [], onViewDetails }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {students.map((student) => (
-        <StudentCard key={student.id} student={student} onViewDetails={onViewDetails} />
+        <StudentCard
+          key={student.id}
+          student={student}
+          screenStream={student.id === selectedStudentId ? remoteScreenStream : null}
+          cameraStream={student.id === selectedStudentId ? remoteCameraStream : null}
+          cameraUnavailable={student.id === selectedStudentId && cameraUnavailable}
+          onViewDetails={onViewDetails}
+        />
       ))}
     </div>
   )

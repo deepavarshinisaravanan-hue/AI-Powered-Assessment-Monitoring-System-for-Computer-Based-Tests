@@ -3,11 +3,17 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 
 from app.config import settings
+from app.database import get_db
+from app.models.user import User
+from sqlalchemy.orm import Session
 
 security = HTTPBearer()
 
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+) -> dict:
     token = credentials.credentials
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
@@ -24,4 +30,20 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             detail="Invalid authentication credentials",
         )
 
-    return {"user_id": int(user_id), "role": payload.get("role")}
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+        )
+
+    return {"user_id": user.id, "role": user.role}
+
+
+def get_current_admin_user(current_user: dict = Depends(get_current_user)) -> dict:
+    if current_user.get("role") not in {"admin", "faculty"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator access required",
+        )
+    return current_user

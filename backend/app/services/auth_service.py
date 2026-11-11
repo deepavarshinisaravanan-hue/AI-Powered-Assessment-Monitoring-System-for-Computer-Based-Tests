@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from jose import jwt
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -8,21 +8,26 @@ from app.config import settings
 from app.models.user import User
 from app.schemas.auth import RegisterRequest, LoginRequest
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    subject: str,
+    expires_delta: timedelta | None = None,
+    role: str | None = None,
+) -> str:
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode = {"sub": subject, "exp": expire}
+    to_encode = {"sub": subject, "role": role, "exp": expire}
     return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    password_bytes = password.encode("utf-8")
+    return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(password, hashed_password)
+    try:
+        return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
+    except (TypeError, ValueError):
+        return False
 
 
 def register_user(db: Session, payload: RegisterRequest) -> User:
@@ -34,7 +39,7 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
         name=payload.name,
         email=str(payload.email),
         password_hash=hash_password(payload.password),
-        role=payload.role,
+        role="student",
     )
     db.add(user)
     db.commit()

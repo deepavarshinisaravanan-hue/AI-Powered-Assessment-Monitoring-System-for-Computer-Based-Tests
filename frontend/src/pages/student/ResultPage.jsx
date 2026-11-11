@@ -25,18 +25,24 @@ export default function ResultPage() {
   const navigate = useNavigate()
   const { result: contextResult } = useExam()
 
-  // Use passed state or fallback to exam context result or default mock
-  const res = location.state?.result || contextResult || {
-    score: 16,
-    totalMarks: 20,
-    correct: 8,
-    incorrect: 2,
-    total: 10,
-    percentage: 80,
-    risk: "Low",
-    violations: 1,
-    timeTaken: 1420,
-    submittedAt: new Date().toISOString(),
+  const candidateResult = location.state?.result || contextResult
+  const res = candidateResult?.reportId ? candidateResult : null
+
+  if (!res) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <PageHeader
+          title="Assessment Result"
+          description="No submitted result is available for this session."
+        />
+        <Card className="p-6 text-center">
+          <p className="text-sm text-muted mb-4">Submit an assessment to view its saved result.</p>
+          <Button variant="primary" icon={FiHome} onClick={() => navigate("/student/dashboard")}>
+            Return to Dashboard
+          </Button>
+        </Card>
+      </div>
+    )
   }
 
   const chartData = [

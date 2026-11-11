@@ -24,9 +24,7 @@ export function AuthProvider({ children }) {
     const { user: u, token: t } = await authService.login(credentials)
     setUser(u)
     setToken(t)
-    if (credentials.remember !== false) {
-      storage(STORAGE_KEYS.AUTH).set({ user: u, token: t })
-    }
+    storage(STORAGE_KEYS.AUTH).set({ user: u, token: t }, credentials.remember !== false)
     return u
   }
 
@@ -42,7 +40,10 @@ export function AuthProvider({ children }) {
     setUser((prev) => {
       const next = { ...prev, ...patch }
       const saved = storage(STORAGE_KEYS.AUTH).get()
-      if (saved) storage(STORAGE_KEYS.AUTH).set({ ...saved, user: next })
+      if (saved) {
+        const persistent = localStorage.getItem(STORAGE_KEYS.AUTH) !== null
+        storage(STORAGE_KEYS.AUTH).set({ ...saved, user: next }, persistent)
+      }
       return next
     })
   }

@@ -7,6 +7,7 @@ import Alert from "../../components/ui/Alert"
 import Card from "../../components/ui/Card"
 import Logo from "../../components/layout/Logo"
 import { useAuth } from "../../context/AuthContext"
+import { authService } from "../../services/authService"
 import toast from "react-hot-toast"
 
 export default function Register() {
@@ -36,7 +37,16 @@ export default function Register() {
     if (!validate()) return
     setLoading(true)
     try {
-      const user = await login({ email: "student@example.com", password: "student123", role: "student" })
+      await authService.register({
+        name: form.name.trim(),
+        email: form.email,
+        password: form.password,
+      })
+      const user = await login({
+        email: form.email,
+        password: form.password,
+        role: "student",
+      })
       toast.success(`Account created! Welcome, ${form.name || user.name}.`)
       navigate("/student/dashboard", { replace: true })
     } catch (err) {

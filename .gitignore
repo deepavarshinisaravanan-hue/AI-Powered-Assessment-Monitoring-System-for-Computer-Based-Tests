@@ -13,3 +13,34 @@ backend/venv/
 .dist/
 build/
 dist/
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+
+# Build files
+build/
+dist/
+.vite/
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log

@@ -10,7 +10,7 @@ export default function RoleRoute({ children, allowedRoles }) {
   if (!isAuthenticated) return <Navigate to="/login" replace />
 
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    const fallback = user?.role === "admin" ? "/admin/dashboard" : "/student/dashboard"
+    const fallback = ["admin", "faculty"].includes(user?.role) ? "/admin/dashboard" : "/student/dashboard"
     return <Navigate to={fallback} replace />
   }
 

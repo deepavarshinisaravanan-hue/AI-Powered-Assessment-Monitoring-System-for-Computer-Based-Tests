@@ -25,22 +25,32 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
 
   useEffect(() => {
+    let cancelled = false
     async function fetchAdminData() {
       try {
         const res = await dashboardService.getAdminStats()
-        setData(res)
+        if (!cancelled) setData(res)
+      } catch (error) {
+        if (!cancelled) setLoadError(error.message)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     fetchAdminData()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   if (loading) return <Loader label="Loading administrator dashboard..." />
+  if (loadError || !data) {
+    return <Card className="p-6 text-sm text-danger">{loadError || "Dashboard data is unavailable."}</Card>
+  }
 
-  const { stats, violationSummary, performanceData, weeklyExams, recentActivities } = data || {}
+  const { stats, violationSummary, performanceData, weeklyExams, recentActivities } = data
 
   return (
     <div className="space-y-6">
@@ -71,29 +81,29 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Students"
-          value={stats?.totalStudents || 1284}
-          subtext="Active in 5 departments"
+          value={stats.totalStudents}
+          subtext="Registered student accounts"
           icon={FiUsers}
           variant="primary"
         />
         <StatCard
           title="Running Exams"
-          value={stats?.runningExams || 42}
-          subtext="Live proctored sessions"
+          value={stats.runningExams}
+          subtext="Active monitoring sessions"
           icon={FiPlayCircle}
           variant="secondary"
         />
         <StatCard
           title="Completed Exams"
-          value={stats?.completedExams || 968}
-          subtext="Processed assessments"
+          value={stats.completedExams}
+          subtext="Saved assessment reports"
           icon={FiCheckCircle}
           variant="success"
         />
         <StatCard
           title="Violations Flagged"
-          value={stats?.violations || 137}
-          subtext="Requires admin review"
+          value={stats.violations}
+          subtext="Persisted violation records"
           icon={FiAlertTriangle}
           variant="danger"
         />
@@ -105,14 +115,22 @@ export default function AdminDashboard() {
           title="Violation Type Breakdown"
           subtitle="Distribution of security flags detected during active exams"
         >
-          <DonutChart data={violationSummary} height={260} />
+          {violationSummary.length ? (
+            <DonutChart data={violationSummary} height={260} />
+          ) : (
+            <p className="py-12 text-center text-sm text-muted">No violations have been recorded.</p>
+          )}
         </ChartWrapper>
 
         <ChartWrapper
           title="Candidate Score Distribution"
           subtitle="Percentage distribution across all completed assessments"
         >
-          <BarChart data={performanceData} height={260} />
+          {performanceData.some((bucket) => bucket.value > 0) ? (
+            <BarChart data={performanceData} height={260} />
+          ) : (
+            <p className="py-12 text-center text-sm text-muted">No saved assessment scores.</p>
+          )}
         </ChartWrapper>
       </div>
 
@@ -121,8 +139,8 @@ export default function AdminDashboard() {
         {/* Weekly Exam Activity Chart (2 cols) */}
         <div className="lg:col-span-2">
           <ChartWrapper
-            title="Weekly Examination Volume"
-            subtitle="Daily count of computer-based assessments conducted"
+            title="Weekly Submission Volume"
+            subtitle="Saved assessment reports by day over the last week"
             action={
               <Button
                 variant="ghost"
@@ -150,7 +168,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-1">
-            {recentActivities?.map((act) => (
+            {recentActivities.length ? recentActivities.map((act) => (
               <div
                 key={act.id}
                 className="p-3 rounded-xl border border-border/60 bg-muted/10 flex items-start justify-between gap-3 text-xs"
@@ -174,7 +192,7 @@ export default function AdminDashboard() {
                   {act.type}
                 </Badge>
               </div>
-            ))}
+            )) : <p className="text-sm text-muted">No persisted activity yet.</p>}
           </div>
         </Card>
       </div>
